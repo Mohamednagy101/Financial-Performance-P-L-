@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Performance P&L Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f5;
+    --bg2: #f2ede6;
+    --bg3: #fff;
+    --ink: #1a1410;
+    --ink2: #4a3f35;
+    --ink3: #8a7e75;
+    --accent: #8b2e00;
+    --accent2: #c4541a;
+    --green: #1a5c3a;
+    --red: #8b2e2e;
+    --border: rgba(26,20,16,0.1);
+    --gold: #b8860b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: 'Source Sans 3', sans-serif; min-height:100vh; }
+
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .header-left h1 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+  .header-left p { font-size: 12px; color: rgba(250,248,245,0.5); margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .header-right { font-size: 11px; color: rgba(250,248,245,0.4); text-align: right; line-height: 1.6; }
+  .header-right strong { color: #c4541a; font-weight: 600; }
+
+  .section { padding: 1.5rem 2.5rem; }
+  .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink3); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content:''; flex:1; height:1px; background: var(--border); }
+
+  .kpi-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .kpi-card { background: var(--bg3); border: 1px solid var(--border); padding: 1rem 1.2rem; border-top: 3px solid var(--accent); }
+  .kpi-card.green-top { border-top-color: var(--green); }
+  .kpi-card.gold-top { border-top-color: var(--gold); }
+  .kpi-name { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink3); margin-bottom: 8px; }
+  .kpi-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .kpi-sub { font-size: 11px; }
+  .pos { color: var(--green); } .neg { color: var(--red); }
+
+  .two-col { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; }
+  .card { background: var(--bg3); border: 1px solid var(--border); padding: 1.25rem; }
+
+  .pl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .pl-table th { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink3); padding: 6px 8px; border-bottom: 2px solid var(--border); text-align: right; }
+  .pl-table th:first-child { text-align: left; }
+  .pl-table td { padding: 7px 8px; border-bottom: 1px solid rgba(26,20,16,0.05); text-align: right; }
+  .pl-table td:first-child { text-align: left; }
+  .pl-table tr.section-row td { background: var(--bg2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink2); }
+  .pl-table tr.total-row td { background: var(--ink); color: var(--bg); font-weight: 600; }
+  .pl-table tr:hover:not(.section-row):not(.total-row) { background: rgba(196,84,26,0.04); }
+
+  .waterfall { display:flex; align-items:flex-end; gap:4px; height:180px; padding-top:20px; }
+  .wf-col { display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; position:relative; }
+  .wf-bar { width:100%; border-radius:1px; }
+  .wf-spacer { width:100%; }
+  .wf-label { font-size:9px; font-family: 'Source Sans 3'; color:var(--ink3); text-align:center; margin-top:4px; white-space:nowrap; }
+  .wf-val { font-size:9px; font-weight:600; color:var(--ink2); }
+
+  .opex-list { display:flex; flex-direction:column; gap:10px; }
+  .opex-row { display:flex; align-items:center; gap:10px; font-size:12px; }
+  .opex-name { width:120px; color:var(--ink2); }
+  .opex-bg { flex:1; height:6px; background:var(--bg2); border-radius:1px; overflow:hidden; }
+  .opex-fill { height:100%; border-radius:1px; }
+  .opex-pct { width:38px; text-align:right; font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Financial Performance &amp; P&L Dashboard</h1>
+    <p>SAP S/4HANA · Power BI · Margin &amp; OPEX Analysis · Project 02</p>
+  </div>
+  <div class="header-right">
+    Fiscal Year 2024<br>
+    <strong>SAP S/4HANA</strong> data source<br>
+    Last refresh: 1 Jun 2024
+  </div>
+</header>
+
+<div class="section">
+  <div class="section-label">Key Performance Indicators</div>
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-name">Revenue</div>
+      <div class="kpi-num">$92.4M</div>
+      <div class="kpi-sub pos">▲ 9.2% YoY</div>
+    </div>
+    <div class="kpi-card green-top">
+      <div class="kpi-name">Gross Profit</div>
+      <div class="kpi-num">$38.1M</div>
+      <div class="kpi-sub pos">Margin 41.2%</div>
+    </div>
+    <div class="kpi-card gold-top">
+      <div class="kpi-name">EBITDA</div>
+      <div class="kpi-num">$21.6M</div>
+      <div class="kpi-sub pos">Margin 23.4%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-name">OPEX</div>
+      <div class="kpi-num">$16.5M</div>
+      <div class="kpi-sub neg">▲ 4.1% vs Budget</div>
+    </div>
+    <div class="kpi-card green-top">
+      <div class="kpi-name">Net Income</div>
+      <div class="kpi-num">$14.2M</div>
+      <div class="kpi-sub pos">Margin 15.4%</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="padding-top:0">
+  <div class="section-label">P&L Statement vs Budget</div>
+  <div class="two-col">
+    <div class="card">
+      <table class="pl-table">
+        <thead>
+          <tr><th>Line Item</th><th>Actual</th><th>Budget</th><th>Variance</th><th>%</th></tr>
+        </thead>
+        <tbody>
+          <tr class="section-row"><td colspan="5">Revenue</td></tr>
+          <tr><td>Product Sales</td><td>71,200</td><td>68,000</td><td style="color:var(--green)">+3,200</td><td style="color:var(--green)">+4.7%</td></tr>
+          <tr><td>Service Revenue</td><td>18,400</td><td>19,000</td><td style="color:var(--red)">-600</td><td style="color:var(--red)">-3.2%</td></tr>
+          <tr><td>Other Income</td><td>2,800</td><td>2,500</td><td style="color:var(--green)">+300</td><td style="color:var(--green)">+12%</td></tr>
+          <tr class="section-row"><td colspan="5">Cost of Goods Sold</td></tr>
+          <tr><td>Direct Materials</td><td>28,100</td><td>26,800</td><td style="color:var(--red)">+1,300</td><td style="color:var(--red)">+4.9%</td></tr>
+          <tr><td>Direct Labor</td><td>14,600</td><td>15,000</td><td style="color:var(--green)">-400</td><td style="color:var(--green)">-2.7%</td></tr>
+          <tr><td>Manufacturing OH</td><td>11,600</td><td>11,200</td><td style="color:var(--red)">+400</td><td style="color:var(--red)">+3.6%</td></tr>
+          <tr class="section-row"><td colspan="5">Operating Expenses</td></tr>
+          <tr><td>S&amp;M Expenses</td><td>6,800</td><td>6,200</td><td style="color:var(--red)">+600</td><td style="color:var(--red)">+9.7%</td></tr>
+          <tr><td>G&amp;A Expenses</td><td>5,100</td><td>5,400</td><td style="color:var(--green)">-300</td><td style="color:var(--green)">-5.6%</td></tr>
+          <tr><td>R&amp;D Expenses</td><td>4,600</td><td>4,200</td><td style="color:var(--red)">+400</td><td style="color:var(--red)">+9.5%</td></tr>
+          <tr class="total-row"><td>Net Income</td><td>14,200</td><td>13,900</td><td style="color:#7fcfa0">+300</td><td style="color:#7fcfa0">+2.2%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="section-label" style="margin-bottom:.75rem">OPEX Breakdown</div>
+        <div class="opex-list" id="opexList"></div>
+      </div>
+      <div class="card">
+        <div class="section-label" style="margin-bottom:.75rem">Margin Bridge</div>
+        <div class="waterfall" id="waterfall"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const opex = [
+  {name:'S&M',pct:41,color:'#8b2e00'},
+  {name:'G&A',pct:31,color:'#c4541a'},
+  {name:'R&D',pct:28,color:'#b8860b'},
+];
+const ol = document.getElementById('opexList');
+opex.forEach(o=>{
+  ol.innerHTML+=`<div class="opex-row">
+    <span class="opex-name">${o.name}</span>
+    <div class="opex-bg"><div class="opex-fill" style="width:${o.pct}%;background:${o.color}"></div></div>
+    <span class="opex-pct" style="color:${o.color}">${o.pct}%</span>
+  </div>`;
+});
+
+const wf = [
+  {label:'Revenue',val:92.4,h:160,spacer:0,color:'#1a1410'},
+  {label:'COGS',val:-54.3,h:94,spacer:66,color:'#8b2e2e'},
+  {label:'Gross P.',val:38.1,h:66,spacer:94,color:'#1a5c3a'},
+  {label:'OPEX',val:-16.5,h:29,spacer:37,color:'#c4541a'},
+  {label:'Net Inc.',val:21.6,h:37,spacer:0,color:'#1a1410'},
+];
+const w = document.getElementById('waterfall');
+wf.forEach(b=>{
+  w.innerHTML+=`<div class="wf-col">
+    <div class="wf-val" style="color:${b.val<0?'#8b2e2e':'#1a5c3a'}">${b.val>0?'+':''}$${b.val}M</div>
+    <div class="wf-spacer" style="height:${b.spacer}px"></div>
+    <div class="wf-bar" style="height:${b.h}px;background:${b.color}"></div>
+    <div class="wf-label">${b.label}</div>
+  </div>`;
+});
+</script>
+</body>
+</html>
